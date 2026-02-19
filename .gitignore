@@ -1,0 +1,18 @@
+# Visual Studio Geçici Dosyaları
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Derleme Çıktıları
+bin/
+obj/
+Debug/
+Release/
+x64/
+x86/
+
+# İşletim Sistemi Dosyaları
+[Tt]humbs.db
+[Dd]esktop.ini
