@@ -2,54 +2,49 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CipherTool
 {
-  
+    /// <summary>
+    /// AES-256 + PBKDF2 tabanlı dosya şifreleme/çözme motoru.
+    /// UI katmanından tamamen bağımsızdır.
+    /// </summary>
     public static class CryptoManager
     {
-        // Sabitler ve parametreler
-        private const int SaltSize = 32;   // 256 bit
-        private const int IvSize = 16;   // 128 bit (AES blok boyutu)
-        private const int KeySize = 32;   // 256 bit
-        private const int Iterations = 200_000; // PBKDF2 iterasyon sayısı
+        // Sabitler
+        private const int SaltSize = 32;
+        private const int IvSize = 16;
+        private const int KeySize = 32;
+        private const int Iterations = 200_000;
         private const string EncryptedExtension = ".cipher";
 
-        // Şifrelenmiş dosya başlık imzası (Magic Bytes) — bütünlük kontrolü için
         private static readonly byte[] MagicBytes = Encoding.ASCII.GetBytes("CIPHERTOOL_V1");
+
+        private static readonly string SpecialChars = "!@#$%^&*()_+-=[]{}|;':\",./<>?";
 
         // ------------------------------------------------------------------ //
         //  PUBLIC API
         // ------------------------------------------------------------------ //
 
-        /// <summary>
-        /// Verilen dosyayı AES-256 ile şifreler.
-        /// </summary>
-        /// <param name="sourceFilePath">Şifrelenecek kaynak dosya yolu</param>
-        /// <param name="password">Kullanıcı parolası</param>
-        /// <returns>Oluşturulan .cipher dosyasının tam yolu</returns>
         public static string EncryptFile(string sourceFilePath, string password)
         {
             ValidateInputs(sourceFilePath, password);
 
             string destFilePath = sourceFilePath + EncryptedExtension;
 
-            // Salt ve IV rastgele üret
             byte[] salt = GenerateRandomBytes(SaltSize);
             byte[] iv = GenerateRandomBytes(IvSize);
-
-            // Paroladan anahtar türet (PBKDF2 / SHA-256)
             byte[] key = DeriveKey(password, salt);
 
             using FileStream fsOut = new(destFilePath, FileMode.Create, FileAccess.Write);
             using FileStream fsIn = new(sourceFilePath, FileMode.Open, FileAccess.Read);
 
-            // Başlık yaz: [MagicBytes][Salt][IV]
             fsOut.Write(MagicBytes, 0, MagicBytes.Length);
             fsOut.Write(salt, 0, salt.Length);
             fsOut.Write(iv, 0, iv.Length);
 
-            // AES-256-CBC ile şifrele
             using Aes aes = CreateAes(key, iv);
             using ICryptoTransform encryptor = aes.CreateEncryptor();
             using CryptoStream cs = new(fsOut, encryptor, CryptoStreamMode.Write);
@@ -60,37 +55,31 @@ namespace CipherTool
             return destFilePath;
         }
 
-        
         public static string DecryptFile(string sourceFilePath, string password)
         {
             ValidateInputs(sourceFilePath, password);
 
             if (!sourceFilePath.EndsWith(EncryptedExtension, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException(
-                    $"Seçilen dosya geçerli bir .cipher dosyası değil.");
+                throw new InvalidOperationException("Seçilen dosya geçerli bir .cipher dosyası değil.");
 
-            
             string destFilePath = sourceFilePath[..^EncryptedExtension.Length];
-
-            
             destFilePath = GetUniqueFilePath(destFilePath);
 
             using FileStream fsIn = new(sourceFilePath, FileMode.Open, FileAccess.Read);
 
-         
-            byte[] magicRead = new byte[MagicBytes.Length];
+            byte[] bytes = new byte[MagicBytes.Length];
+            byte[] magicRead = bytes;
             int bytesRead = fsIn.Read(magicRead, 0, magicRead.Length);
             if (bytesRead != MagicBytes.Length || !CompareBytes(magicRead, MagicBytes))
-                throw new InvalidDataException(
-                    "Dosya imzası geçersiz. Bu bir CipherTool dosyası olmayabilir.");
+                throw new InvalidDataException("Dosya imzası geçersiz. Bu bir CipherTool dosyası olmayabilir.");
 
-           
             byte[] salt = new byte[SaltSize];
             byte[] iv = new byte[IvSize];
-            fsIn.Read(salt, 0, SaltSize);
-            fsIn.Read(iv, 0, IvSize);
 
-            
+            // CA2022 UYARISI ÇÖZÜMÜ: Read yerine ReadExactly kullanıldı.
+            fsIn.ReadExactly(salt, 0, SaltSize);
+            fsIn.ReadExactly(iv, 0, IvSize);
+
             byte[] key = DeriveKey(password, salt);
 
             using FileStream fsOut = new(destFilePath, FileMode.Create, FileAccess.Write);
@@ -100,34 +89,74 @@ namespace CipherTool
                 using Aes aes = CreateAes(key, iv);
                 using ICryptoTransform decryptor = aes.CreateDecryptor();
                 using CryptoStream cs = new(fsIn, decryptor, CryptoStreamMode.Read);
-
                 cs.CopyTo(fsOut);
             }
             catch (CryptographicException)
             {
-                // Yanlış parola veya bozuk dosya — oluşturulan geçici dosyayı temizle
                 fsOut.Close();
                 if (File.Exists(destFilePath)) File.Delete(destFilePath);
-                throw new CryptographicException(
-                    "Şifre çözme başarısız. Parola yanlış veya dosya bozuk olabilir.");
+                throw new CryptographicException("Şifre çözme başarısız. Parola yanlış veya dosya bozuk olabilir.");
             }
 
             return destFilePath;
+        }
+
+        /// <summary>
+        /// Parola gücünü 0-5 arası puan olarak döner.
+        /// UI'da canlı gösterim için kullanılır.
+        /// </summary>
+        public static int GetPasswordStrength(string password)
+        {
+            if (string.IsNullOrEmpty(password)) return 0;
+
+            int score = 0;
+            if (password.Length >= 8) score++;
+            if (password.Any(char.IsUpper)) score++;
+            if (password.Any(char.IsLower)) score++;
+            if (password.Any(char.IsDigit)) score++;
+            if (password.Any(c => SpecialChars.Contains(c))) score++;
+            return score;
         }
 
         // ------------------------------------------------------------------ //
         //  PRIVATE HELPERS
         // ------------------------------------------------------------------ //
 
+        private static void ValidateInputs(string filePath, string password)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+                throw new ArgumentException("Dosya yolu boş olamaz.");
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException("Dosya bulunamadı.", filePath);
+            if (string.IsNullOrEmpty(password))
+                throw new ArgumentException("Parola boş olamaz.");
+
+            var errors = new List<string>();
+
+            if (password.Length < 8)
+                errors.Add("• En az 8 karakter olmalıdır");
+            if (!password.Any(char.IsUpper))
+                errors.Add("• En az 1 büyük harf içermelidir (A-Z)");
+            if (!password.Any(char.IsLower))
+                errors.Add("• En az 1 küçük harf içermelidir (a-z)");
+            if (!password.Any(char.IsDigit))
+                errors.Add("• En az 1 rakam içermelidir (0-9)");
+            if (!password.Any(c => SpecialChars.Contains(c)))
+                errors.Add("• En az 1 özel karakter içermelidir (!@#$%^&* vb.)");
+
+            if (errors.Count > 0)
+                throw new ArgumentException("Parola yeterince güçlü değil:\n" + string.Join("\n", errors));
+        }
+
         private static byte[] DeriveKey(string password, byte[] salt)
         {
-            using var pbkdf2 = new Rfc2898DeriveBytes(
+            // SYSLIB0060 UYARISI ÇÖZÜMÜ: Obsolete metot yerine modern statik Pbkdf2 kullanıldı.
+            return Rfc2898DeriveBytes.Pbkdf2(
                 password,
                 salt,
                 Iterations,
-                HashAlgorithmName.SHA256);
-
-            return pbkdf2.GetBytes(KeySize);
+                HashAlgorithmName.SHA256,
+                KeySize);
         }
 
         private static Aes CreateAes(byte[] key, byte[] iv)
@@ -152,20 +181,7 @@ namespace CipherTool
         private static bool CompareBytes(byte[] a, byte[] b)
         {
             if (a.Length != b.Length) return false;
-            // Sabit zamanlı karşılaştırma (timing attack önlemi)
             return CryptographicOperations.FixedTimeEquals(a, b);
-        }
-
-        private static void ValidateInputs(string filePath, string password)
-        {
-            if (string.IsNullOrWhiteSpace(filePath))
-                throw new ArgumentException("Dosya yolu boş olamaz.");
-            if (!File.Exists(filePath))
-                throw new FileNotFoundException("Dosya bulunamadı.", filePath);
-            if (string.IsNullOrEmpty(password))
-                throw new ArgumentException("Parola boş olamaz.");
-            if (password.Length < 8)
-                throw new ArgumentException("Parola en az 8 karakter olmalıdır.");
         }
 
         private static string GetUniqueFilePath(string path)
