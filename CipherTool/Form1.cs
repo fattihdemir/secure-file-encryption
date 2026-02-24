@@ -102,7 +102,7 @@ namespace CipherTool
 
             // ── DROP ZONE ─────────────────────────────────────────────────
             pnlDropZone = CreatePanel(ColorPanel, new Rectangle(24, 96, 572, 160));
-            pnlDropZone.BorderStyle = BorderStyle.FixedSingle;
+            {
             pnlDropZone.AllowDrop = true;
             StyleRoundedBorder(pnlDropZone);
 
@@ -154,7 +154,7 @@ namespace CipherTool
                 ForeColor = ColorText,
                 BorderStyle = BorderStyle.FixedSingle,
                 Location = new Point(16, 36),
-                Size = new Size(534, 30),
+                Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
                 PlaceholderText = "En az 8 karakter girin..."
             };
 
