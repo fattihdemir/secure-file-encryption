@@ -5,13 +5,10 @@ using System.Text;
 
 namespace CipherTool
 {
-    /// <summary>
-    /// AES-256 + PBKDF2 tabanlı dosya şifreleme/çözme motoru.
-    /// UI katmanından tamamen bağımsızdır.
-    /// </summary>
+  
     public static class CryptoManager
     {
-        // Sabitler
+        // Sabitler ve parametreler
         private const int SaltSize = 32;   // 256 bit
         private const int IvSize = 16;   // 128 bit (AES blok boyutu)
         private const int KeySize = 32;   // 256 bit
@@ -63,12 +60,7 @@ namespace CipherTool
             return destFilePath;
         }
 
-        /// <summary>
-        /// Verilen .cipher dosyasını çözer.
-        /// </summary>
-        /// <param name="sourceFilePath">Çözülecek .cipher dosyası</param>
-        /// <param name="password">Kullanıcı parolası</param>
-        /// <returns>Oluşturulan çözülmüş dosyanın tam yolu</returns>
+        
         public static string DecryptFile(string sourceFilePath, string password)
         {
             ValidateInputs(sourceFilePath, password);
@@ -77,28 +69,28 @@ namespace CipherTool
                 throw new InvalidOperationException(
                     $"Seçilen dosya geçerli bir .cipher dosyası değil.");
 
-            // Orijinal dosya adını geri al (uzantıyı çıkar)
+            
             string destFilePath = sourceFilePath[..^EncryptedExtension.Length];
 
-            // Aynı isimde dosya varsa çakışmayı önle
+            
             destFilePath = GetUniqueFilePath(destFilePath);
 
             using FileStream fsIn = new(sourceFilePath, FileMode.Open, FileAccess.Read);
 
-            // MagicBytes doğrula
+         
             byte[] magicRead = new byte[MagicBytes.Length];
             int bytesRead = fsIn.Read(magicRead, 0, magicRead.Length);
             if (bytesRead != MagicBytes.Length || !CompareBytes(magicRead, MagicBytes))
                 throw new InvalidDataException(
                     "Dosya imzası geçersiz. Bu bir CipherTool dosyası olmayabilir.");
 
-            // Salt ve IV oku
+           
             byte[] salt = new byte[SaltSize];
             byte[] iv = new byte[IvSize];
             fsIn.Read(salt, 0, SaltSize);
             fsIn.Read(iv, 0, IvSize);
 
-            // Paroladan anahtar türet
+            
             byte[] key = DeriveKey(password, salt);
 
             using FileStream fsOut = new(destFilePath, FileMode.Create, FileAccess.Write);

@@ -47,7 +47,7 @@ namespace CipherTool
         private static readonly Color ColorMuted = Color.FromArgb(100, 116, 139);
         private static readonly Color ColorBorder = Color.FromArgb(51, 65, 85);
 
-        // Seçili dosya yolu
+        
         private string _selectedFilePath = string.Empty;
 
         // ------------------------------------------------------------------ //
@@ -204,7 +204,7 @@ namespace CipherTool
 
                 pnlStatus.Controls.AddRange(new Control[] { lblStatusIcon, lblStatusText });
 
-                // ── FOOTER ────────────────────────────────────────────────────
+                // ── FOOTER ───
                 pnlFooter = CreatePanel(ColorPanel, new Rectangle(0, 620, 620, 40));
                 lblFooter = new Label
                 {
@@ -217,7 +217,7 @@ namespace CipherTool
                 };
                 pnlFooter.Controls.Add(lblFooter);
 
-                // ── FORMA EKLE ────────────────────────────────────────────────
+                // ── FORMA EKLE ────
                 Controls.AddRange(new Control[]
                 {
                 pnlHeader, pnlDropZone, pnlPassword,
@@ -240,14 +240,14 @@ namespace CipherTool
             chkShowPassword.CheckedChanged += (s, e) =>
                 txtPassword.UseSystemPasswordChar = !chkShowPassword.Checked;
 
-            // Drag & Drop
+            
             pnlDropZone.DragEnter += PnlDropZone_DragEnter;
             pnlDropZone.DragDrop += PnlDropZone_DragDrop;
             pnlDropZone.DragLeave += (s, e) => ResetDropZoneBorder();
             lblDropHint.DragEnter += PnlDropZone_DragEnter;
             lblDropHint.DragDrop += PnlDropZone_DragDrop;
 
-            // Hover efekti
+            
             AddHoverEffect(btnEncrypt, ColorAccent, Color.FromArgb(79, 82, 221));
             AddHoverEffect(btnDecrypt, Color.FromArgb(30, 100, 80), Color.FromArgb(22, 163, 74));
             AddHoverEffect(btnClear, Color.FromArgb(60, 40, 40), Color.FromArgb(127, 29, 29));
@@ -357,7 +357,7 @@ namespace CipherTool
             lblFileName.Text = $"📄 {name}";
             lblFileName.ForeColor = ColorSuccess;
 
-            // .cipher ise uyarı ver
+            
             if (path.EndsWith(".cipher", StringComparison.OrdinalIgnoreCase))
                 SetStatus($"Cipher dosyası seçildi: {name}\nŞifre çözmek için 'Çöz' butonuna basın.",
                           ColorWarning, "⚠️");
@@ -438,7 +438,7 @@ namespace CipherTool
         // ------------------------------------------------------------------ //
         private void InitializeComponent()
         {
-            // Designer.cs içini boşalttığımız için burada Form özelliklerini set ediyoruz
+            
             SuspendLayout();
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
