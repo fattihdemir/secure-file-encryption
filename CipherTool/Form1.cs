@@ -36,10 +36,10 @@ namespace CipherTool
         private Panel pnlFooter;
         private Label lblFooter;
 
-        // Renk paleti
+        
         private static readonly Color ColorBg = Color.FromArgb(18, 18, 30);
         private static readonly Color ColorPanel = Color.FromArgb(28, 28, 45);
-        private static readonly Color ColorAccent = Color.FromArgb(99, 102, 241); // indigo
+        private static readonly Color ColorAccent = Color.FromArgb(99, 102, 241); 
         private static readonly Color ColorSuccess = Color.FromArgb(34, 197, 94);
         private static readonly Color ColorDanger = Color.FromArgb(239, 68, 68);
         private static readonly Color ColorWarning = Color.FromArgb(234, 179, 8);
@@ -76,7 +76,7 @@ namespace CipherTool
             MaximizeBox = false;
             Font = new Font("Segoe UI", 9.5f);
 
-            // ── HEADER ────────────────────────────────────────────────────
+            // ── HEADER ─────
             pnlHeader = CreatePanel(ColorPanel, new Rectangle(0, 0, 620, 80));
             pnlHeader.BorderStyle = BorderStyle.None;
 
@@ -100,130 +100,131 @@ namespace CipherTool
 
             pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubtitle });
 
-            // ── DROP ZONE ─────────────────────────────────────────────────
+            // ── DROP ZONE ────
             pnlDropZone = CreatePanel(ColorPanel, new Rectangle(24, 96, 572, 160));
             {
-            pnlDropZone.AllowDrop = true;
-            StyleRoundedBorder(pnlDropZone);
+                pnlDropZone.AllowDrop = true;
+                StyleRoundedBorder(pnlDropZone);
 
-            lblDropHint = new Label
-            {
-                Text = "📂   Dosyayı buraya sürükleyip bırakın",
-                Font = new Font("Segoe UI", 12f),
-                ForeColor = ColorMuted,
-                TextAlign = ContentAlignment.MiddleCenter,
-                Dock = DockStyle.None,
-                AutoSize = false,
-                Size = new Size(572, 70),
-                Location = new Point(0, 30)
-            };
+                lblDropHint = new Label
+                {
+                    Text = "📂   Dosyayı buraya sürükleyip bırakın",
+                    Font = new Font("Segoe UI", 12f),
+                    ForeColor = ColorMuted,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Dock = DockStyle.None,
+                    AutoSize = false,
+                    Size = new Size(572, 70),
+                    Location = new Point(0, 30)
+                };
 
-            lblFileName = new Label
-            {
-                Text = string.Empty,
-                Font = new Font("Segoe UI", 9f, FontStyle.Italic),
-                ForeColor = ColorSuccess,
-                TextAlign = ContentAlignment.MiddleCenter,
-                AutoSize = false,
-                Size = new Size(572, 24),
-                Location = new Point(0, 100)
-            };
+                lblFileName = new Label
+                {
+                    Text = string.Empty,
+                    Font = new Font("Segoe UI", 9f, FontStyle.Italic),
+                    ForeColor = ColorSuccess,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    AutoSize = false,
+                    Size = new Size(572, 24),
+                    Location = new Point(0, 100)
+                };
 
-            btnBrowse = CreateButton("Dosya Seç (Browse)", ColorAccent, new Rectangle(196, 108, 180, 36));
-            btnBrowse.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+                btnBrowse = CreateButton("Dosya Seç (Browse)", ColorAccent, new Rectangle(196, 108, 180, 36));
+                btnBrowse.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
 
-            pnlDropZone.Controls.AddRange(new Control[] { lblDropHint, lblFileName, btnBrowse });
+                pnlDropZone.Controls.AddRange(new Control[] { lblDropHint, lblFileName, btnBrowse });
 
-            // ── PAROLA ────────────────────────────────────────────────────
-            pnlPassword = CreatePanel(ColorPanel, new Rectangle(24, 272, 572, 100));
+                // ── PAROLA ────
+                pnlPassword = CreatePanel(ColorPanel, new Rectangle(24, 272, 572, 100));
 
-            lblPassword = new Label
-            {
-                Text = "Parola",
-                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                ForeColor = ColorMuted,
-                AutoSize = true,
-                Location = new Point(16, 14)
-            };
+                lblPassword = new Label
+                {
+                    Text = "Parola",
+                    Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                    ForeColor = ColorMuted,
+                    AutoSize = true,
+                    Location = new Point(16, 14)
+                };
 
-            txtPassword = new TextBox
-            {
-                UseSystemPasswordChar = true,
-                Font = new Font("Segoe UI", 11f),
-                BackColor = ColorBg,
-                ForeColor = ColorText,
-                BorderStyle = BorderStyle.FixedSingle,
-                Location = new Point(16, 36),
-                Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
-                PlaceholderText = "En az 8 karakter girin..."
-            };
+                txtPassword = new TextBox
+                {
+                    UseSystemPasswordChar = true,
+                    Font = new Font("Segoe UI", 11f),
+                    BackColor = ColorBg,
+                    ForeColor = ColorText,
+                    BorderStyle = BorderStyle.FixedSingle,
+                    Location = new Point(16, 36),
+                    Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
+                    PlaceholderText = "En az 8 karakter girin..."
+                };
 
-            chkShowPassword = new CheckBox
-            {
-                Text = "Parolayı göster",
-                Font = new Font("Segoe UI", 8.5f),
-                ForeColor = ColorMuted,
-                AutoSize = true,
-                Location = new Point(16, 68)
-            };
+                chkShowPassword = new CheckBox
+                {
+                    Text = "Parolayı göster",
+                    Font = new Font("Segoe UI", 8.5f),
+                    ForeColor = ColorMuted,
+                    AutoSize = true,
+                    Location = new Point(16, 68)
+                };
 
-            pnlPassword.Controls.AddRange(new Control[] { lblPassword, txtPassword, chkShowPassword });
+                pnlPassword.Controls.AddRange(new Control[] { lblPassword, txtPassword, chkShowPassword });
 
-            // ── BUTONLAR ──────────────────────────────────────────────────
-            btnEncrypt = CreateButton("🔒  Şifrele", ColorAccent, new Rectangle(24, 388, 174, 46));
-            btnDecrypt = CreateButton("🔓  Çöz", Color.FromArgb(30, 100, 80), new Rectangle(210, 388, 174, 46));
-            btnClear = CreateButton("✕  Temizle", Color.FromArgb(60, 40, 40), new Rectangle(396, 388, 200, 46));
+                // ── BUTONLAR ────
+                btnEncrypt = CreateButton("🔒  Şifrele", ColorAccent, new Rectangle(24, 388, 174, 46));
+                btnDecrypt = CreateButton("🔓  Çöz", Color.FromArgb(30, 100, 80), new Rectangle(210, 388, 174, 46));
+                btnClear = CreateButton("✕  Temizle", Color.FromArgb(60, 40, 40), new Rectangle(396, 388, 200, 46));
 
-            btnEncrypt.ForeColor = Color.White;
-            btnDecrypt.ForeColor = Color.White;
-            btnClear.ForeColor = Color.White;
+                btnEncrypt.ForeColor = Color.White;
+                btnDecrypt.ForeColor = Color.White;
+                btnClear.ForeColor = Color.White;
 
-            // ── DURUM PANELİ ──────────────────────────────────────────────
-            pnlStatus = CreatePanel(Color.FromArgb(25, 25, 40), new Rectangle(24, 450, 572, 130));
-            pnlStatus.BorderStyle = BorderStyle.FixedSingle;
+                // ── DURUM PANELİ ───
+                pnlStatus = CreatePanel(Color.FromArgb(25, 25, 40), new Rectangle(24, 450, 572, 130));
+                pnlStatus.BorderStyle = BorderStyle.FixedSingle;
 
-            lblStatusIcon = new Label
-            {
-                Text = "ℹ",
-                Font = new Font("Segoe UI", 22f),
-                ForeColor = ColorMuted,
-                AutoSize = true,
-                Location = new Point(16, 14)
-            };
+                lblStatusIcon = new Label
+                {
+                    Text = "ℹ",
+                    Font = new Font("Segoe UI", 22f),
+                    ForeColor = ColorMuted,
+                    AutoSize = true,
+                    Location = new Point(16, 14)
+                };
 
-            lblStatusText = new Label
-            {
-                Text = "Bir dosya seçin ve parolanızı girin, ardından işlem butonuna basın.",
-                Font = new Font("Segoe UI", 9.5f),
-                ForeColor = ColorMuted,
-                AutoSize = false,
-                Size = new Size(510, 100),
-                Location = new Point(58, 14),
-                MaximumSize = new Size(510, 0)
-            };
+                lblStatusText = new Label
+                {
+                    Text = "Bir dosya seçin ve parolanızı girin, ardından işlem butonuna basın.",
+                    Font = new Font("Segoe UI", 9.5f),
+                    ForeColor = ColorMuted,
+                    AutoSize = false,
+                    Size = new Size(510, 100),
+                    Location = new Point(58, 14),
+                    MaximumSize = new Size(510, 0)
+                };
 
-            pnlStatus.Controls.AddRange(new Control[] { lblStatusIcon, lblStatusText });
+                pnlStatus.Controls.AddRange(new Control[] { lblStatusIcon, lblStatusText });
 
-            // ── FOOTER ────────────────────────────────────────────────────
-            pnlFooter = CreatePanel(ColorPanel, new Rectangle(0, 620, 620, 40));
-            lblFooter = new Label
-            {
-                Text = "AES-256-CBC · PBKDF2-SHA256 · 200.000 İterasyon · Random Salt + IV",
-                Font = new Font("Segoe UI", 8f),
-                ForeColor = ColorMuted,
-                TextAlign = ContentAlignment.MiddleCenter,
-                AutoSize = false,
-                Dock = DockStyle.Fill
-            };
-            pnlFooter.Controls.Add(lblFooter);
+                // ── FOOTER ────────────────────────────────────────────────────
+                pnlFooter = CreatePanel(ColorPanel, new Rectangle(0, 620, 620, 40));
+                lblFooter = new Label
+                {
+                    Text = "AES-256-CBC · PBKDF2-SHA256 · 200.000 İterasyon · Random Salt + IV",
+                    Font = new Font("Segoe UI", 8f),
+                    ForeColor = ColorMuted,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    AutoSize = false,
+                    Dock = DockStyle.Fill
+                };
+                pnlFooter.Controls.Add(lblFooter);
 
-            // ── FORMA EKLE ────────────────────────────────────────────────
-            Controls.AddRange(new Control[]
-            {
+                // ── FORMA EKLE ────────────────────────────────────────────────
+                Controls.AddRange(new Control[]
+                {
                 pnlHeader, pnlDropZone, pnlPassword,
                 btnEncrypt, btnDecrypt, btnClear,
                 pnlStatus, pnlFooter
-            });
+                });
+            }
         }
 
         // ------------------------------------------------------------------ //
@@ -261,7 +262,7 @@ namespace CipherTool
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
                 e.Effect = DragDropEffects.Copy;
-                pnlDropZone.BackColor = Color.FromArgb(35, 40, 65); // vurgu
+                pnlDropZone.BackColor = Color.FromArgb(35, 40, 65); 
             }
             else
                 e.Effect = DragDropEffects.None;
@@ -418,7 +419,7 @@ namespace CipherTool
 
         private static void StyleRoundedBorder(Panel panel)
         {
-            // Kesik çizgili kenarlık simüle et (gerçek rounded corner WinForms'da daha karmaşık)
+            
             panel.Paint += (s, e) =>
             {
                 using var pen = new Pen(Color.FromArgb(99, 102, 241), 2) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
