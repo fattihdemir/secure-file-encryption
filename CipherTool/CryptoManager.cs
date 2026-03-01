@@ -42,6 +42,13 @@ namespace CipherTool
             using FileStream fsIn = new(sourceFilePath, FileMode.Open, FileAccess.Read);
 
             fsOut.Write(MagicBytes, 0, MagicBytes.Length);
+            // ipucu olarak dosya adını yaz
+            string hint = Path.GetFileNameWithoutExtension(sourceFilePath);
+            byte[] hintBytes = Encoding.UTF8.GetBytes(hint);
+            byte[] hintLength = BitConverter.GetBytes(hintBytes.Length);
+
+            fsOut.Write(hintLength, 0, hintLength.Length);
+            fsOut.Write(hintBytes, 0, hintBytes.Length);
             fsOut.Write(salt, 0, salt.Length);
             fsOut.Write(iv, 0, iv.Length);
 
@@ -77,6 +84,11 @@ namespace CipherTool
             byte[] iv = new byte[IvSize];
 
             // CA2022 UYARISI ÇÖZÜMÜ: Read yerine ReadExactly kullanıldı.
+            // ipucu kısmını atla
+            byte[] lenBytes = new byte[4];
+            fsIn.Read(lenBytes, 0, 4);
+            int hintLength = BitConverter.ToInt32(lenBytes, 0);
+            fsIn.Position += hintLength;
             fsIn.ReadExactly(salt, 0, SaltSize);
             fsIn.ReadExactly(iv, 0, IvSize);
 
@@ -201,6 +213,39 @@ namespace CipherTool
             } while (File.Exists(newPath));
 
             return newPath;
+        }
+
+        // ===== ŞİFRE İPUCU OKUMA METODU =====
+        public static string ReadHint(string encryptedFilePath)
+        {
+            if (string.IsNullOrWhiteSpace(encryptedFilePath))
+                throw new ArgumentException("Dosya yolu boş olamaz.", nameof(encryptedFilePath));
+
+            if (!File.Exists(encryptedFilePath))
+                throw new FileNotFoundException("Dosya bulunamadı.", encryptedFilePath);
+
+            using FileStream fs = new(encryptedFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+            // Dosya yapısı: [MagicBytes][Salt(32)][IV(16)][HintLen(4)][HintBytes][CipherData...]
+            // Magic + Salt + IV kısmını atla
+            fs.Position = MagicBytes.Length + SaltSize + IvSize;
+
+            // Hint uzunluğunu oku (4 byte)
+            byte[] lenBytes = new byte[4];
+            fs.ReadExactly(lenBytes, 0, 4);
+            int hintLength = BitConverter.ToInt32(lenBytes, 0);
+
+            // Güvenlik kontrolü: saçma değerleri engelle
+            if (hintLength <= 0 || hintLength > 4096)
+
+                return "İpucu yok";
+
+            // Hint verisini oku
+            byte[] hintBytes = new byte[hintLength];
+            fs.ReadExactly(hintBytes, 0, hintLength);
+
+            string hint = Encoding.UTF8.GetString(hintBytes).Trim();
+            return string.IsNullOrWhiteSpace(hint) ? "İpucu yok" : hint;
         }
     }
 }
