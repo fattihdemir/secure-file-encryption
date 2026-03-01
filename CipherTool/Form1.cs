@@ -185,7 +185,7 @@ namespace CipherTool
                 BackColor = ColorPanel,
                 Margin = new Padding(16, 0, 16, 8)
             };
-
+            
             lblPassword = new Label
             {
                 Text = "Parola",
