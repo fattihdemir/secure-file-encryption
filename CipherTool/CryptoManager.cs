@@ -28,7 +28,12 @@ namespace CipherTool
         //  PUBLIC API
         // ------------------------------------------------------------------ //
 
-        public static string EncryptFile(string sourceFilePath, string password)
+        /// <summary>
+        /// Dosyayı şifreler. hint parametresi opsiyoneldir; boş geçilebilir.
+        /// İpucu, dosyanın başına düz metin olarak (şifresiz) gömülür.
+        /// Format: [MAGIC][HINT_LEN 4 byte][HINT UTF8][SALT][IV][ENCRYPTEd DATA]
+        /// </summary>
+        public static string EncryptFile(string sourceFilePath, string password, string hint = "")
         {
             ValidateInputs(sourceFilePath, password);
 
@@ -38,10 +43,17 @@ namespace CipherTool
             byte[] iv = GenerateRandomBytes(IvSize);
             byte[] key = DeriveKey(password, salt);
 
+            // İpucu baytları (boş olabilir)
+            byte[] hintBytes = Encoding.UTF8.GetBytes(hint ?? string.Empty);
+            byte[] hintLength = BitConverter.GetBytes(hintBytes.Length); // 4 byte, little-endian
+
             using FileStream fsOut = new(destFilePath, FileMode.Create, FileAccess.Write);
             using FileStream fsIn = new(sourceFilePath, FileMode.Open, FileAccess.Read);
 
+            // Header: MAGIC | HINT_LEN | HINT | SALT | IV
             fsOut.Write(MagicBytes, 0, MagicBytes.Length);
+            fsOut.Write(hintLength, 0, hintLength.Length);
+            fsOut.Write(hintBytes, 0, hintBytes.Length);
             fsOut.Write(salt, 0, salt.Length);
             fsOut.Write(iv, 0, iv.Length);
 
@@ -53,6 +65,36 @@ namespace CipherTool
             cs.FlushFinalBlock();
 
             return destFilePath;
+        }
+
+        /// <summary>
+        /// .cipher dosyasındaki ipucunu okur. Parola gerekmez.
+        /// Dosya geçersizse boş string döner.
+        /// </summary>
+        public static string ReadHint(string cipherFilePath)
+        {
+            try
+            {
+                using FileStream fs = new(cipherFilePath, FileMode.Open, FileAccess.Read);
+
+                byte[] magicRead = new byte[MagicBytes.Length];
+                if (fs.Read(magicRead, 0, magicRead.Length) != MagicBytes.Length) return string.Empty;
+                if (!CompareBytes(magicRead, MagicBytes)) return string.Empty;
+
+                byte[] lenBytes = new byte[4];
+                fs.ReadExactly(lenBytes, 0, 4);
+                int hintLen = BitConverter.ToInt32(lenBytes, 0);
+
+                if (hintLen <= 0 || hintLen > 1024) return string.Empty; // güvenlik sınırı
+
+                byte[] hintBytes = new byte[hintLen];
+                fs.ReadExactly(hintBytes, 0, hintLen);
+                return Encoding.UTF8.GetString(hintBytes);
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         public static string DecryptFile(string sourceFilePath, string password)
@@ -67,16 +109,22 @@ namespace CipherTool
 
             using FileStream fsIn = new(sourceFilePath, FileMode.Open, FileAccess.Read);
 
-            byte[] bytes = new byte[MagicBytes.Length];
-            byte[] magicRead = bytes;
+            // MAGIC
+            byte[] magicRead = new byte[MagicBytes.Length];
             int bytesRead = fsIn.Read(magicRead, 0, magicRead.Length);
             if (bytesRead != MagicBytes.Length || !CompareBytes(magicRead, MagicBytes))
                 throw new InvalidDataException("Dosya imzası geçersiz. Bu bir CipherTool dosyası olmayabilir.");
 
+            // HINT (atla, zaten ReadHint ile okundu)
+            byte[] lenBytes = new byte[4];
+            fsIn.ReadExactly(lenBytes, 0, 4);
+            int hintLen = BitConverter.ToInt32(lenBytes, 0);
+            if (hintLen > 0 && hintLen <= 1024)
+                fsIn.Seek(hintLen, SeekOrigin.Current);
+
+            // SALT + IV
             byte[] salt = new byte[SaltSize];
             byte[] iv = new byte[IvSize];
-
-            // CA2022 UYARISI ÇÖZÜMÜ: Read yerine ReadExactly kullanıldı.
             fsIn.ReadExactly(salt, 0, SaltSize);
             fsIn.ReadExactly(iv, 0, IvSize);
 
@@ -150,7 +198,6 @@ namespace CipherTool
 
         private static byte[] DeriveKey(string password, byte[] salt)
         {
-            // SYSLIB0060 UYARISI ÇÖZÜMÜ: Obsolete metot yerine modern statik Pbkdf2 kullanıldı.
             return Rfc2898DeriveBytes.Pbkdf2(
                 password,
                 salt,
