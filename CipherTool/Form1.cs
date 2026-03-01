@@ -138,11 +138,12 @@ namespace CipherTool
 
             lblDropHint = new Label
             {
-                Text = "📂   Dosyayı buraya sürükleyip bırakın",
+                Text = "📂    Dosyayı buraya sürükleyip bırakın",
                 Font = new Font("Segoe UI", 12f),
                 ForeColor = ColorMuted,
                 TextAlign = ContentAlignment.MiddleCenter,
-                Dock = DockStyle.Fill
+                Dock = DockStyle.Fill,
+                AutoSize = false
             };
 
             btnBrowse = new Button
