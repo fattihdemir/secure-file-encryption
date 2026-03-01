@@ -8,9 +8,9 @@ namespace CipherTool
 {
     public partial class Form1 : Form
     {
-        // ------------------------------------------------------------------ //
+        // ---------------------------------------------------------//
         //  UI KONTROLLERI (CS8618 Çözümü için = null!; eklendi)
-        // ------------------------------------------------------------------ //
+        // ---------------------------------------------------------//
         private Panel pnlHeader = null!;
         private Label lblTitle = null!;
         private Label lblSubtitle = null!;
@@ -30,7 +30,6 @@ namespace CipherTool
         private Button btnEncrypt = null!;
         private Button btnDecrypt = null!;
         private Button btnClear = null!;
-        private Button btnHint = null!;
 
         private Panel pnlStatus = null!;
         private Label lblStatusIcon = null!;
@@ -51,9 +50,9 @@ namespace CipherTool
 
         private string _selectedFilePath = string.Empty;
 
-        // ------------------------------------------------------------------ //
+        // -----------------//
         //  CONSTRUCTOR
-        // ------------------------------------------------------------------ //
+        // -----------------//
         public Form1()
         {
             InitializeComponent();
@@ -61,9 +60,9 @@ namespace CipherTool
             WireEvents();
         }
 
-        // ------------------------------------------------------------------ //
+        // ----------------//
         //  UI İNŞASI
-        // ------------------------------------------------------------------ //
+        // ---------------//
         private void BuildUI()
         {
             // FORM
@@ -88,34 +87,50 @@ namespace CipherTool
             };
 
             mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 80));   // Header
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 30));    // DropZone
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 90));   // Header
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 140));  // DropZone
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 160));  // Password
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60));   // Buttons
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 70));    // Status
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));   // Status
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));   // Footer
 
-            // ── HEADER ──────────────────────────────────────────────────
-            pnlHeader = new Panel { Dock = DockStyle.Fill, BackColor = ColorPanel };
+            // ── HEADER ───────
+            pnlHeader = new Panel { Dock = DockStyle.Fill, BackColor = ColorPanel, Padding = new Padding(16, 0, 16, 0) };
+
+            var headerLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                RowCount = 2,
+                ColumnCount = 1,
+                BackColor = Color.Transparent
+            };
+            headerLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 58));
+            headerLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 42));
+
             lblTitle = new Label
             {
                 Text = "🔐  CipherTool",
                 Font = new Font("Segoe UI", 18f, FontStyle.Bold),
                 ForeColor = ColorAccent,
-                AutoSize = true,
-                Location = new Point(24, 10)
+                AutoSize = false,
+                TextAlign = ContentAlignment.BottomLeft,
+                Dock = DockStyle.Fill
             };
             lblSubtitle = new Label
             {
                 Text = "AES-256 · PBKDF2  |  Güvenli Dosya Şifreleme",
                 Font = new Font("Segoe UI", 9f),
                 ForeColor = ColorMuted,
-                AutoSize = true,
-                Location = new Point(27, 46)
+                AutoSize = false,
+                TextAlign = ContentAlignment.TopLeft,
+                Dock = DockStyle.Fill
             };
-            pnlHeader.Controls.AddRange(new Control[] { lblTitle, lblSubtitle });
 
-            // ── DROP ZONE ───────────────────────────────────────────────
+            headerLayout.Controls.Add(lblTitle, 0, 0);
+            headerLayout.Controls.Add(lblSubtitle, 0, 1);
+            pnlHeader.Controls.Add(headerLayout);
+
+            // ── DROP ZONE ───────
             pnlDropZone = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -132,17 +147,19 @@ namespace CipherTool
                 ColumnCount = 1,
                 BackColor = Color.Transparent
             };
+            dropLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 38));
             dropLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 40));
-            dropLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 35));
-            dropLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
+            dropLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 22));
 
             lblDropHint = new Label
             {
-                Text = "📂   Dosyayı buraya sürükleyip bırakın",
+                Text = "📂  Dosyayı buraya sürükleyip bırakın",
                 Font = new Font("Segoe UI", 12f),
                 ForeColor = ColorMuted,
                 TextAlign = ContentAlignment.MiddleCenter,
-                Dock = DockStyle.Fill
+                Dock = DockStyle.Fill,
+                AutoSize = false,
+                Padding = new Padding(0, 10, 0, 0)
             };
 
             btnBrowse = new Button
@@ -170,7 +187,9 @@ namespace CipherTool
                 Font = new Font("Segoe UI", 9f, FontStyle.Italic),
                 ForeColor = ColorSuccess,
                 TextAlign = ContentAlignment.MiddleCenter,
-                Dock = DockStyle.Fill
+                Dock = DockStyle.Fill,
+                AutoSize = false,
+                Padding = new Padding(0, 4, 0, 0)
             };
 
             dropLayout.Controls.Add(lblDropHint, 0, 0);
@@ -178,14 +197,14 @@ namespace CipherTool
             dropLayout.Controls.Add(lblFileName, 0, 2);
             pnlDropZone.Controls.Add(dropLayout);
 
-            // ── PAROLA ──────────────────────────────────────────────────
+            // ── PAROLA ──────
             pnlPassword = new Panel
             {
                 Dock = DockStyle.Fill,
                 BackColor = ColorPanel,
                 Margin = new Padding(16, 0, 16, 8)
             };
-            
+
             lblPassword = new Label
             {
                 Text = "Parola",
@@ -248,7 +267,7 @@ namespace CipherTool
                 lblPasswordRules.Width = pnlPassword.Width - 32;
             };
 
-            // ── BUTONLAR ────────────────────────────────────────────────
+            // ── BUTONLAR ─────
             var pnlButtons = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -276,16 +295,6 @@ namespace CipherTool
                 Cursor = Cursors.Hand,
                 Anchor = AnchorStyles.Top | AnchorStyles.Left
             };
-            btnHint = new Button
-            {
-                Text = "💡  İpucu",
-                BackColor = Color.FromArgb(70, 70, 110),
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
-                Cursor = Cursors.Hand,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left
-            };
             btnClear = new Button
             {
                 Text = "✕  Temizle",
@@ -297,20 +306,17 @@ namespace CipherTool
                 Anchor = AnchorStyles.Top | AnchorStyles.Left
             };
 
-            pnlButtons.Controls.AddRange(new Control[] { btnEncrypt, btnDecrypt, btnHint, btnClear });
+            pnlButtons.Controls.AddRange(new Control[] { btnEncrypt, btnDecrypt, btnClear });
             pnlButtons.Resize += (s, e) =>
             {
-                int gap = 10;
+                int btnW = (pnlButtons.Width - 20) / 3;
                 int btnH = 42;
-                int btnW = (pnlButtons.Width - (gap * 3)) / 4;
-
                 btnEncrypt.SetBounds(0, 8, btnW, btnH);
-                btnDecrypt.SetBounds(btnW + gap, 8, btnW, btnH);
-                btnHint.SetBounds((btnW + gap) * 2, 8, btnW, btnH);
-                btnClear.SetBounds((btnW + gap) * 3, 8, btnW, btnH);
+                btnDecrypt.SetBounds(btnW + 10, 8, btnW, btnH);
+                btnClear.SetBounds(btnW * 2 + 20, 8, btnW, btnH);
             };
 
-            // ── DURUM PANELİ ────────────────────────────────────────────
+            // ── DURUM PANELİ ──────
             pnlStatus = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -321,25 +327,29 @@ namespace CipherTool
             lblStatusIcon = new Label
             {
                 Text = "ℹ",
-                Font = new Font("Segoe UI", 22f),
+                Font = new Font("Segoe UI", 20f),
                 ForeColor = ColorMuted,
-                AutoSize = true,
-                Location = new Point(12, 12)
+                AutoSize = false,
+                Size = new Size(48, 48),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Location = new Point(12, 10)
             };
             lblStatusText = new Label
             {
                 Text = "Bir dosya seçin ve parolanızı girin, ardından işlem butonuna basın.",
                 Font = new Font("Segoe UI", 9.5f),
                 ForeColor = ColorMuted,
-                Location = new Point(54, 12),
+                Location = new Point(68, 10),
+                AutoSize = false,
+                Height = 60,
                 Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top
             };
 
             pnlStatus.Controls.AddRange(new Control[] { lblStatusIcon, lblStatusText });
             pnlStatus.Resize += (s, e) =>
-                lblStatusText.Width = pnlStatus.Width - 70;
+                lblStatusText.Width = pnlStatus.Width - 84;
 
-            // ── FOOTER ──────────────────────────────────────────────────
+            // ── FOOTER ─────
             pnlFooter = new Panel { Dock = DockStyle.Fill, BackColor = ColorPanel };
             lblFooter = new Label
             {
@@ -351,7 +361,7 @@ namespace CipherTool
             };
             pnlFooter.Controls.Add(lblFooter);
 
-            // ── ANA LAYOUT'A EKLE ───────────────────────────────────────
+            // ── ANA LAYOUT'A EKLE ───────
             mainLayout.Controls.Add(pnlHeader, 0, 0);
             mainLayout.Controls.Add(pnlDropZone, 0, 1);
             mainLayout.Controls.Add(pnlPassword, 0, 2);
@@ -362,16 +372,15 @@ namespace CipherTool
             Controls.Add(mainLayout);
         }
 
-        // ------------------------------------------------------------------ //
+        // -------------------//
         //  EVENT WIRING
-        // ------------------------------------------------------------------ //
+        // ------------------//
         private void WireEvents()
         {
             btnBrowse.Click += BtnBrowse_Click;
             btnEncrypt.Click += BtnEncrypt_Click;
             btnDecrypt.Click += BtnDecrypt_Click;
             btnClear.Click += BtnClear_Click;
-            btnHint.Click += BtnHint_Click;
 
             chkShowPassword.CheckedChanged += (s, e) =>
                 txtPassword.UseSystemPasswordChar = !chkShowPassword.Checked;
@@ -410,9 +419,9 @@ namespace CipherTool
             AddHoverEffect(btnBrowse, ColorAccent, Color.FromArgb(79, 82, 221));
         }
 
-        // ------------------------------------------------------------------ //
+        // -------------------//
         //  DRAG & DROP
-        // ------------------------------------------------------------------ //
+        // ------------------//
         private void PnlDropZone_DragEnter(object? sender, DragEventArgs e)
         {
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
@@ -432,9 +441,9 @@ namespace CipherTool
                 LoadFile(files[0]);
         }
 
-        // ------------------------------------------------------------------ //
+        // --------------------//
         //  BUTTON HANDLERS
-        // ------------------------------------------------------------------ //
+        // --------------------//
         private void BtnBrowse_Click(object? sender, EventArgs e)
         {
             using OpenFileDialog dlg = new()
@@ -497,34 +506,9 @@ namespace CipherTool
             SetStatus("Bir dosya seçin ve parolanızı girin, ardından işlem butonuna basın.", ColorMuted, "ℹ");
         }
 
-        private void BtnHint_Click(object? sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(_selectedFilePath))
-            {
-                SetStatus("⚠️ Önce bir dosya seçmelisin.", ColorWarning, "⚠️");
-                return;
-            }
-
-            if (!_selectedFilePath.EndsWith(".cipher", StringComparison.OrdinalIgnoreCase))
-            {
-                MessageBox.Show("İpucu sadece şifrelenmiş (.cipher) dosyada olur.");
-                return;
-            }
-
-            try
-            {
-                string hint = CryptoManager.ReadHint(_selectedFilePath);
-                MessageBox.Show("💡 İpucu:\n" + hint);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("İpucu okunamadı: " + ex.Message);
-            }
-        }
-
-        // ------------------------------------------------------------------ //
+        // -------------------------//
         //  YARDIMCI METODLAR
-        // ------------------------------------------------------------------ //
+        // ------------------------//
         private void LoadFile(string path)
         {
             _selectedFilePath = path;
@@ -561,9 +545,9 @@ namespace CipherTool
             lblStatusIcon.ForeColor = color;
         }
 
-        // ------------------------------------------------------------------ //
+        // ------------------------//
         //  UI FACTORY METODLARI
-        // ------------------------------------------------------------------ //
+        // -----------------------//
         private static void StyleRoundedBorder(Panel panel)
         {
             panel.Paint += (s, e) =>
@@ -582,9 +566,9 @@ namespace CipherTool
             btn.MouseLeave += (s, e) => btn.BackColor = normalColor;
         }
 
-        // ------------------------------------------------------------------ //
+        // -----------------//
         //  DESIGNER STUB
-        // ------------------------------------------------------------------ //
+        // -----------------//
         private void InitializeComponent()
         {
             SuspendLayout();
