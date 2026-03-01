@@ -30,6 +30,7 @@ namespace CipherTool
         private Button btnEncrypt = null!;
         private Button btnDecrypt = null!;
         private Button btnClear = null!;
+        private Button btnHint = null!;
 
         private Panel pnlStatus = null!;
         private Label lblStatusIcon = null!;
@@ -275,6 +276,16 @@ namespace CipherTool
                 Cursor = Cursors.Hand,
                 Anchor = AnchorStyles.Top | AnchorStyles.Left
             };
+            btnHint = new Button
+            {
+                Text = "💡  İpucu",
+                BackColor = Color.FromArgb(70, 70, 110),
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
+                Cursor = Cursors.Hand,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left
+            };
             btnClear = new Button
             {
                 Text = "✕  Temizle",
@@ -286,14 +297,17 @@ namespace CipherTool
                 Anchor = AnchorStyles.Top | AnchorStyles.Left
             };
 
-            pnlButtons.Controls.AddRange(new Control[] { btnEncrypt, btnDecrypt, btnClear });
+            pnlButtons.Controls.AddRange(new Control[] { btnEncrypt, btnDecrypt, btnHint, btnClear });
             pnlButtons.Resize += (s, e) =>
             {
-                int btnW = (pnlButtons.Width - 20) / 3;
+                int gap = 10;
                 int btnH = 42;
+                int btnW = (pnlButtons.Width - (gap * 3)) / 4;
+
                 btnEncrypt.SetBounds(0, 8, btnW, btnH);
-                btnDecrypt.SetBounds(btnW + 10, 8, btnW, btnH);
-                btnClear.SetBounds(btnW * 2 + 20, 8, btnW, btnH);
+                btnDecrypt.SetBounds(btnW + gap, 8, btnW, btnH);
+                btnHint.SetBounds((btnW + gap) * 2, 8, btnW, btnH);
+                btnClear.SetBounds((btnW + gap) * 3, 8, btnW, btnH);
             };
 
             // ── DURUM PANELİ ────────────────────────────────────────────
@@ -357,6 +371,7 @@ namespace CipherTool
             btnEncrypt.Click += BtnEncrypt_Click;
             btnDecrypt.Click += BtnDecrypt_Click;
             btnClear.Click += BtnClear_Click;
+            btnHint.Click += BtnHint_Click;
 
             chkShowPassword.CheckedChanged += (s, e) =>
                 txtPassword.UseSystemPasswordChar = !chkShowPassword.Checked;
@@ -480,6 +495,31 @@ namespace CipherTool
             lblPasswordStrength.Text = "Güç: Parola girilmedi  ○○○○○";
             lblPasswordStrength.ForeColor = ColorMuted;
             SetStatus("Bir dosya seçin ve parolanızı girin, ardından işlem butonuna basın.", ColorMuted, "ℹ");
+        }
+
+        private void BtnHint_Click(object? sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(_selectedFilePath))
+            {
+                SetStatus("⚠️ Önce bir dosya seçmelisin.", ColorWarning, "⚠️");
+                return;
+            }
+
+            if (!_selectedFilePath.EndsWith(".cipher", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show("İpucu sadece şifrelenmiş (.cipher) dosyada olur.");
+                return;
+            }
+
+            try
+            {
+                string hint = CryptoManager.ReadHint(_selectedFilePath);
+                MessageBox.Show("💡 İpucu:\n" + hint);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("İpucu okunamadı: " + ex.Message);
+            }
         }
 
         // ------------------------------------------------------------------ //
