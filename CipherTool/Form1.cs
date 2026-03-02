@@ -273,7 +273,7 @@ namespace CipherTool
 
             lblHint = new Label
             {
-                Text = "💡 Parola İpucu  (opsiyonel, şifrelenmiş dosyaya gömülür)",
+                Text = "Parola İpucu  (opsiyonel, şifrelenmiş dosyaya gömülür)",
                 Font = new Font("Segoe UI", 8f),
                 ForeColor = ColorMuted,
                 AutoSize = true,
@@ -287,7 +287,7 @@ namespace CipherTool
                 ForeColor = ColorText,
                 BorderStyle = BorderStyle.FixedSingle,
                 Location = new Point(0, 18),
-                PlaceholderText = "Örn: Annemin doğum yeri + favori sayım",
+                PlaceholderText = "Örn: Doğum yeri + favori sayım",
                 Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
                 Height = 26
             };
@@ -317,7 +317,7 @@ namespace CipherTool
 
             btnEncrypt = new Button
             {
-                Text = "🔒  Şifrele",
+                Text = "  Şifrele",
                 BackColor = ColorAccent,
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
@@ -327,7 +327,7 @@ namespace CipherTool
             };
             btnDecrypt = new Button
             {
-                Text = "🔓  Çöz",
+                Text = "  Çöz",
                 BackColor = Color.FromArgb(30, 100, 80),
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
@@ -370,7 +370,7 @@ namespace CipherTool
                 btnDecrypt.SetBounds(btnW + gap,     8, btnW, topH);
                 btnClear.SetBounds(btnW * 2 + gap*2, 8, btnW, topH);
 
-                // İpucu butonu — tam genişlik, alt satır
+                // İppucu butonu — tam genişlik, alt satır
                 btnShowHint.SetBounds(0, topH + gap + 8, totalW, botH);
             };
 
@@ -444,7 +444,7 @@ namespace CipherTool
             chkShowPassword.CheckedChanged += (s, e) =>
                 txtPassword.UseSystemPasswordChar = !chkShowPassword.Checked;
 
-            // Canlı parola gücü göstergesi
+            // Canli parola gücü göstergesi
             txtPassword.TextChanged += (s, e) =>
             {
                 int score = CryptoManager.GetPasswordStrength(txtPassword.Text);
@@ -547,7 +547,7 @@ namespace CipherTool
             }
             catch (CryptographicException ex)
             {
-                // Şifre yanlışsa ipucunu göster
+                // Sifre yanlişsa ipucunu göster
                 string hint = CryptoManager.ReadHint(_selectedFilePath);
                 string hintLine = string.IsNullOrWhiteSpace(hint)
                     ? string.Empty
@@ -592,7 +592,7 @@ namespace CipherTool
                 AutoSize = true
             };
 
-            // Yatay çizgi
+            // Yatay cizgi
             var sep = new Panel
             {
                 BackColor = Color.FromArgb(50, 50, 75),
